@@ -1,46 +1,728 @@
-<!DOCTYPE html>
-<!--
-    Copyright (c) 2012-2014 Adobe Systems Incorporated. All rights reserved.
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, target-densitydpi=device-dpi" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+	<title>Plates</title>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/start/jquery-ui.css">
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<style>
+		table{border-spacing: 0px;}
+		td{vertical-align: top; padding: 0px;}
+		#plates{height: 104px;}
+		#notes{width: 100%;}
+		.innerSpace{width: 360px;}
+		.track{width: 50px; padding: 0px; MARGIN: 0px;}
+		.bar{display: block; width: 50px; height: 20px; float: left; text-align: center; border: 2px solid #00FFFF; position: relative; top: 40px;}
+		.plate{display: block; width: 25px; float: left; text-align: center; position: relative; border: 2px solid #000000; height: 100px;}
+		.p45{border: 2px solid #0000FF; height: 100px;}
+		.p20{border: 2px solid #0000FF; height: 100px;}
+		.p35{border: 2px solid #FFFF00; height: 90px; top: 5px;}
+		.p15{border: 2px solid #FFFF00; height: 90px; top: 5px;}
+		.p25{border: 2px solid #008000; height: 80px; top: 10px;}
+		.p10{border: 2px solid #D3D3D3; height: 70px; top: 15px;}
+		.p5 {border: 2px solid #FF0000; height: 60px; top: 20px;}
+		.p2 {border: 2px solid #8AC007; height: 50px; top: 25px;}
+		.p1 {border: 2px solid #8AC007; height: 50px; top: 25px;}
 
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
+		.ui-state-success { border: 1px solid #3b7a32; background-color: #e7efe6; color: #3b7a32; }
+		.center-v-wrapper { display: table; width: 100%; height: 100%; }
+		.center-v-cell { display: table-cell; vertical-align: middle; }
+		.center-h { display: block; MARGIN: auto; }
+		.center-t { text-align: center; }
+		.right-h { display: block; float: right; }
+		.right-t { text-align: right; }
+		.left-h { display: block; float: left; }
+		.left-t { text-align: left; }
+		.cluster { display: inline-block; vertical-align: top; }
+		.clear-fix:after { content: "."; clear: both; display: block; height: 0; visibility: hidden; }
+		.hidden { display: none; }
 
-    http://www.apache.org/licenses/LICENSE-2.0
+		@media (max-width: 480px) { /* smartphones */ 
+			/*body { border: 1px solid red; }*/
+			.smallinput{width: 130px;}
+			.innerSpace{width: 270px;}
+		}
+		@media (min-width:481px) and (max-width: 767px) { /* tablets portrait */
+			/*body { border: 1px solid orange; }*/
+		}
+		@media (min-width:768px) and (max-width: 979px) { /* tablets landscape, low-res laptops ands desktops */ 
+			/*body { border: 1px solid yellow; }*/
+		}
+		@media (min-width:980px) and (max-width: 1199px) { /* default laptops and desktops */ 
+			/*body { border: 1px solid blue; }*/
+		}
+		@media (min-width:1200px) { /* hi-res laptops and desktops */ 
+			/*body { border: 1px solid green; }*/
+		}
+		@media print { /* Printer */
+		}
+	</style>
+	<script>
+		// generic methods //////////
+		var BASE_ERROR = ' Error!';
 
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
--->
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="msapplication-tap-highlight" content="no" />
-        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        <link rel="stylesheet" type="text/css" href="css/index.css" />
-        <title>Hello World</title>
-    </head>
-    <body>
-        <div class="app">
-            <h1>PhoneGap</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-            </div>
-        </div>
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
-        <script type="text/javascript">
-            app.initialize();
-        </script>
-    </body>
+		showErrors = function(errors){
+			if(errors !== BASE_ERROR){
+				$('#error').html(errors);
+				$('#error').show();
+				$('body').scrollTop(0);
+			}else{
+				$('#error').hide();
+			}
+
+			return (errors !== BASE_ERROR);
+		};
+
+		nukePattern = function(selector, regex){
+			var pattern = new RegExp(regex, 'g');
+
+			$(selector).each(function(i, obj){
+				//replaceing moves the cursor so dont replace unless needed
+				if($(obj).val() === '' || pattern.test($(obj).val())){	//a numeric input with string values apears as ''
+					$(obj).val($(obj).val().replace(pattern, ''));		//that means we are nuking the whole thing
+				}
+			});
+		};
+
+		setCookie = function (c_name, value, exdays) {
+			var errors = BASE_ERROR;			
+			var c_value = window.encodeURIComponent(value);
+
+			if (exdays !== null) {
+				var exdate = new Date();
+				exdate.setDate(exdate.getDate() + exdays);
+				c_value += "; expires=" + exdate.toUTCString();
+			}
+
+			window.document.cookie = c_name + "=" + c_value + ';path=/';
+
+			if(getCookie(c_name) !== window.unescape(value)) { errors += '<br /> Unable to save data. Are cookies blocked?'; }
+			showErrors(errors);
+
+			return (getCookie(c_name) !== window.unescape(c_value));
+		};
+
+		getCookie = function (c_name) {
+			var val = null;
+			var regex = new RegExp('(?:^|[" \t;])' + c_name + '=([^;"]*)(?:$|[";])', 'gi');
+			var match = regex.exec(window.document.cookie);
+
+			if (match !== null) {
+				val = match[1];
+			}
+
+			// null will be returned as an unescaped string: 'null'
+			return window.unescape(val);
+		};
+
+		intToHex = function (d) {
+			return ("0" + (d.toString(16))).slice(-2).toUpperCase();
+		};
+
+		stringColor = function (text) {
+			var hex = '';
+			var diffMultipyler = 333;	// * 333 helps small differences in text display very different colors
+			var r = 0;
+			var g = 0;
+			var b = 0;
+
+			for (var i = 0; i < text.length; i++) {
+				switch (i % 3) {
+					case 0:
+						r += text.charCodeAt(i) * diffMultipyler;
+						break;
+					case 1:
+						g += text.charCodeAt(i) * diffMultipyler;
+						break;
+					case 2:
+						b += text.charCodeAt(i) * diffMultipyler;
+						break;
+					default:
+				}
+			}
+
+			//conver to dark colors
+			hex = '#' + intToHex(r % 128) + intToHex(g % 128) + intToHex(b % 128);
+
+			return hex;
+		};
+
+		flashTip = function(selector){
+			if($('#tips').prop('checked')){
+				$(selector).tooltip('open');
+				setTimeout(function(){$(selector).tooltip('close');}, 1000);
+			}
+		};
+
+		// grid methods //////////
+		getTracking = function(){
+			var html = '';
+			var rows;
+			var cols;
+			var data = {
+				Xs : ['Jan']
+				,Rows : [
+					{Name : 'Bench', Ys : [100]}
+				]
+			};
+
+			if(getCookie('PlatesTracking') !== 'null'){
+				data = JSON.parse(getCookie('PlatesTracking'));
+			}
+
+			//x labels
+			html += '<tr><td><button class="freshTrack" title="&#8593; reload the graph after any updates"><span class="ui-icon ui-icon-refresh"></span></button></td>';
+			for(var c = 0; c < data.Xs.length; c++){
+				html += '<td><input type="text" class="track" value="'+ data.Xs[c] +'" /></td>';
+			}
+
+			//new x label
+			html += '<td style="width:150px"><input type="text" class="track" onkeyup="if( $(this).val().length > 0 ){ $(\'#newCol\').show(); }else{ $(\'#newCol\').hide(); }" /><button id="newCol" style="display: none;" class="freshTrack"><span class="ui-icon ui-icon-plusthick"></span></button></td></tr>';
+
+			//y label and x values
+			for(var r = 0; r < data.Rows.length; r++){
+				html += '<tr><td><input type="text" class="track" value="'+ data.Rows[r].Name +'" /></td>';
+				for(var c = 0; c < data.Rows[r].Ys.length || c < data.Xs.length; c++){
+					html += '<td><input type="number" class="track" value="';
+					if(c < data.Rows[r].Ys.length){
+						html += data.Rows[r].Ys[c];
+					}
+					html += '" /></td>';
+				}
+				html += '<td>&nbsp;</td></tr>';
+			}
+
+			//new y label
+			html += '<tr><td><input type="text" class="track" onkeyup="if( $(this).val().length > 0 ){ $(\'#newRow\').show(); }else{ $(\'#newRow\').hide(); }" /><br /><button id="newRow" style="display: none;" class="freshTrack"><span class="ui-icon ui-icon-plusthick"></span></button></td>';
+			for(var c = 0; c < data.Xs.length; c++){
+				html += '<td>&nbsp;</td>';
+			}
+			html += '<td>&nbsp;</td></tr>';
+
+			$('#tracking').html(html);
+			$('[title]').tooltip();
+			$('button').button();
+			$('.freshTrack').click(function(){
+				setTracking();
+				getTracking();
+			});
+
+			//bind keyups
+			$(document).on('keyup', '[type=number]', function(){	//mobile must use DOCUMENT.on keyup to update with soft keybord
+				nukePattern('[type=number]', '[^0-9.]');	//force numbers and decimals only
+			});
+
+			//draw chart
+			var w = 200;
+			if($('#tracking').width() > w){ w = $('#tracking').width(); }
+			$('#graphHolder').html('<canvas id="graph" width="'+ w +'" height="200"></canvas>');
+			drawGraph(data, $('#graph'));
+		};
+
+		setTracking = function(){
+			var data = {
+				Xs : []
+				,Rows : []
+			};
+
+			//x labels
+			$('#tracking tr:first').find('input').each(function (i, cell){
+				if($(cell).val() !== ''){
+					data.Xs.push($(cell).val());
+				}
+			});
+
+			//y labels and values
+			$('#tracking tr:not(:first)').each(function (i, row){
+				if($(row).find('input:first').val() !== ''){
+					data.Rows.push({Name: $(row).find('input:first').val(), Ys : []});
+
+					$(row).find('input:not(:first)').each(function (ii, cell){
+						data.Rows[data.Rows.length-1].Ys.push($(cell).val());
+					});
+				}
+			});
+
+			setCookie('PlatesTracking', JSON.stringify(data), 9999)
+		};
+
+		// graph methods //////////
+		getMaxX = function(data){
+			return data.Xs.length - 1;
+		};
+		 
+		var cachedMaxY = 0;
+		var cachedMaxYKey = '';
+		getMaxY = function(data){
+			var max = -99999;
+			
+			if(cachedMaxYKey === JSON.stringify(data)){
+				max = cachedMaxY;
+			}else{
+				for(var r = 0; r < data.Rows.length; r++) {
+					for(var y = 0; y < data.Rows[r].Ys.length; y++) {
+						if(parseInt(data.Rows[r].Ys[y]) > max) {
+							max = parseInt(data.Rows[r].Ys[y]);
+						}
+					}
+				}
+
+				cachedMaxYKey = JSON.stringify(data);
+				cachedMaxY = max;
+			}
+			 
+			return max;
+		};
+		 
+		var cachedMinY = 0;
+		var cachedMinYKey = '';
+		getMinY = function(data){
+			var min = getMaxY(data);
+			 
+			if(cachedMinYKey === JSON.stringify(data)){
+				min = cachedMinY;
+			}else{
+				for(var r = 0; r < data.Rows.length; r++) {
+					for(var y = 0; y < data.Rows[r].Ys.length; y++) {
+						if(parseInt(data.Rows[r].Ys[y]) < min) {
+							min = parseInt(data.Rows[r].Ys[y]);
+						}
+					}
+				}
+
+				cachedMinYKey = JSON.stringify(data);
+				cachedMinY = min;
+			}
+			 
+			return min;
+		};
+		 
+		var MARGIN = 20;
+		getXPixel = function(graph, data, val){
+			var width = graph.width() - MARGIN * 2;
+			var pixPerUnit = 1;
+			if(getMaxX(data) !== 0){
+				pixPerUnit = width / getMaxX(data);
+			}
+			var pixels = pixPerUnit * parseInt(val);
+
+			return parseInt(pixels + MARGIN);
+		};
+		 
+		getYPixel = function(graph, data, val){
+			var height = graph.height() - MARGIN * 2;
+			var pixPerUnit = 1;
+			if(getMaxY(data) - getMinY(data) !== 0){
+				pixPerUnit = height / (getMaxY(data) - getMinY(data));
+			}
+			var pixels = pixPerUnit * (parseInt(val) - getMinY(data));
+
+			return parseInt(graph.height() - MARGIN - pixels);
+		};
+
+		drawGraph = function (data, graph){
+			var c = graph[0].getContext('2d');
+			var lineWidth = 2;
+			var color;
+			var Ys;
+			var increment = Math.floor((getMaxY(data) - getMinY(data)) / data.Xs.length);
+
+			if(increment < 1){
+				increment = 1;
+			}
+
+			//the ref lines
+			c.clearRect (0, 0, graph.width(), graph.height());
+			c.strokeStyle = '#CCCCCC';
+			c.lineWidth = lineWidth;
+			c.beginPath();
+			c.moveTo(MARGIN, MARGIN);
+			c.lineTo(MARGIN, graph.height() - MARGIN);
+			c.lineTo(graph.width() - MARGIN, graph.height() - MARGIN);
+			c.stroke();
+
+			//the y labels
+			c.textBaseline = 'middle';
+			for(var y = getMinY(data); y <= getMaxY(data); y += increment){
+				c.fillText(y, 0, getYPixel(graph, data, y));
+			}
+
+			//the x labels
+			c.textBaseline = 'bottom';
+			for(var x = 0; x < data.Xs.length; x++){
+				c.fillText(data.Xs[x], getXPixel(graph, data, x), graph.height());
+			}
+
+			//the lines
+			$('#trackLegend').html('');
+			for(var r = 0; r < data.Rows.length; r++){
+				//the legend
+				$('#trackLegend').html($('#trackLegend').html() +'<tr><td style="background-color:'+ stringColor(data.Rows[r].Name) +';">&nbsp;&nbsp;&nbsp;</td><td>'+ data.Rows[r].Name +'</td></tr>');
+
+				//the line
+				Ys = data.Rows[r].Ys;
+				color = stringColor(data.Rows[r].Name);
+				c.strokeStyle = color;
+				c.lineWidth = lineWidth;
+				c.beginPath();
+				c.moveTo(getXPixel(graph, data, 0), getYPixel(graph, data, parseInt(Ys[0])));
+				for(var y = 0; y < Ys.length; y++) {
+					c.lineTo(getXPixel(graph, data, y), getYPixel(graph, data, parseInt(Ys[y])));
+				}
+				c.stroke();
+
+				//add some data dots
+				c.fillStyle = color;
+				for(var y = 0; y < Ys.length; y++){
+					c.beginPath();
+					c.arc(getXPixel(graph, data, y), getYPixel(graph, data, parseInt(Ys[y])), 4, 0, Math.PI * 2, true);
+					c.fill();
+				}
+			}
+		};
+
+		// plate methods //////////
+		getSortedPlates = function(){
+			var plates = $.map($('#weights').val().split(','), function(v){
+				return parseFloat(v);
+			});
+			plates.sort(function(a, b){return b-a});	//desc
+
+			return plates;
+		};
+
+		calcPlates = function(){
+			if($('#target').val() !== ''){
+				var errors = BASE_ERROR;
+				var found = false;
+				var left = '';
+				var right = '';
+				var bar = '<div class="bar">'+ barWeight +'</div>';
+				var total = barWeight;
+				var width = 54;
+
+				//tested variables
+				var plates = getSortedPlates();
+				var barWeight = parseFloat($('#barWeight').val());
+				var sub = Math.floor($('#target').val());
+
+				if(!(plates[0] > 0)){ errors += '<br /> Settings needs valid available plates'; }
+				if(!(barWeight > 0)){ errors += '<br /> Settings needs a valid bar weight'; }
+				if(!(sub > 0)){ errors += '<br /> Enter a valid weight'; }
+				if(!showErrors(errors)){
+					var found = false;
+					var left = '';
+					var right = '';
+					var bar = '<div class="bar">'+ barWeight +'</div>';
+					var total = barWeight;
+					var width = 54;
+
+					sub = sub - barWeight;
+
+					while(sub >= (plates[plates.length - 1] * 2)){
+						found = false;
+						for(var p = 0; p < plates.length && !found; p++){
+							if((plates[p] * 2) <= sub){
+								found = true;
+								left = '<div class="plate p'+ Math.floor(plates[p]) +' center-h">'+ plates[p] +'</div>'+ left;
+								right = right +'<div class="plate p'+ Math.floor(plates[p]) +' center-h">'+ plates[p] +'</div>';
+								sub -= (plates[p] * 2);
+								total += (plates[p] * 2);
+								width += 58;
+							}
+						}
+					}
+
+					$('#plates').html(left + bar + right);
+					$('#total').html(total);
+					$('#plates').css('width', width +'px');
+				}
+
+				$('#workSpace').accordion('option', 'active', 0);
+				$('#target').focus();
+			}
+		};
+
+		increment = function(increase){
+			var errors = BASE_ERROR;
+			var target = Math.floor($('#target').val());
+			var plates = getSortedPlates();
+			var barWeight = parseFloat($('#barWeight').val());
+			
+			if(!(plates[0] > 0)){ errors += '<br /> Settings needs valid available plates'; }
+			if(!(barWeight > 0)){ errors += '<br /> Settings needs a valid bar weight'; }
+			if(!showErrors(errors)){
+				var twoSmalls = (plates[plates.length - 1] * 2);
+				target = target - target % twoSmalls;
+				target += twoSmalls * (increase ? 1 : -1);
+				if(target < barWeight){
+					target = barWeight;
+				}
+				$('#target').val(target);
+				calcPlates();
+			}
+		};
+
+		calcWarmups = function(){
+			if($('#workWeight').val() !== ''){
+				var errors = BASE_ERROR;
+				var work = Math.floor($('#workWeight').val());
+				var warms = $.map($('#progressions').val().split(','), function(v){
+					return parseFloat(v);
+				});
+				var plates = getSortedPlates();
+				var twoSmalls = (plates[plates.length - 1] * 2);
+				var temp = 0;
+				var rows = '';
+
+				if(!(work > 0)){ errors += '<br /> Enter a valid max'; }
+				if(!(warms[0] > 0)){ errors += '<br /> Settings needs valid warm up progression'; }
+				if(!(plates[0] > 0)){ errors += '<br /> Settings needs valid available plates'; }
+				if(!showErrors(errors)){
+					$('#workWeightHelp').data('value', work);
+					for(var w = 0; w < warms.length; w++){
+						temp = work * (warms[w] / 100);
+						temp = temp - temp % twoSmalls;
+
+						rows += '<tr><td>'+ warms[w] +'%</td>';
+						rows += '<td>'+ temp +'</td>';
+						rows += '<td><button class="warmButton" data-value="'+ temp +'"><span class="ui-icon ui-icon-link"></span></button></td></tr>';
+					}
+					
+					$('#warmTable').html(rows);
+
+					$('button').button();
+					$('.warmButton').click(function(){
+						calcWeight($(this).data('value'));
+						calcPlates();
+					});
+				}
+			}
+		};
+
+		calcWeight = function(weight){
+			$('#target').val(weight);
+			calcPlates();
+		};
+
+		$(window).load(function () {	//after all images are loaded
+			$('#workSpace').accordion({
+				heightStyle: "content"
+				,activate: function( event, ui ) {
+					switch($('#workSpace').accordion('option', 'active')){
+						case 0: //plates
+							flashTip('#down');
+							$('#target').focus();
+						break;
+						case 1:	//warmups
+							flashTip('#workWeightHelp');
+							$('#workWeight').focus();
+						break
+						case 2:	//Tracking
+							getTracking();
+						break
+						case 3:	//notes
+							$('#notes').focus();
+						break
+						case 4:	//donate
+						break
+						case 5:	//settings
+							$('#barWeight').focus();
+						break
+						default:
+					}
+				}
+			});
+
+			$('button').button();
+			$('[title]').tooltip();
+
+			$('#up').click(function(){
+				increment(true);
+			});
+
+			$('#down').click(function(){
+				increment(false);
+			});
+
+			$('#saveNotes').click(function(){
+				setCookie('PlatesNotes', $('#notes').val(), 9999);
+				if(getCookie('PlatesNotes') === 'null'){
+					showErrors(BASE_ERROR +' Unable to save<br />Do you have permission to save from this location?');
+				}else{
+					$('#savedNotes').show();
+					$('#savedNotes').fadeOut(3000);
+				}
+			});
+
+			$('#save').click(function(){
+				setCookie('PlatesTip', $('#tips').prop('checked'), 9999);
+				setCookie('PlatesBar', $('#barWeight').val(), 9999);
+				setCookie('PlatesWeights', $('#weights').val(), 9999);
+				setCookie('PlatesProgressions', $('#progressions').val(), 9999);
+				if(getCookie('PlatesBar') === 'null'){
+					showErrors(BASE_ERROR +' Unable to save<br />Do you have permission to save from this location?');
+				}else{
+					$('#saved').show();
+					$('#saved').fadeOut(3000);
+				}
+			});
+
+			$('.weightButton').click(function(){
+				$('#weights').val($(this).data('value'));
+			});
+
+			$('.progButton').click(function(){
+				$('#progressions').val($(this).data('value'));
+			});
+
+			$(document).on('keyup', '[type=number]', function(){	//mobile must use DOCUMENT.on keyup to update with soft keybord
+				nukePattern('[type=number]', '[^0-9.]');	//force numbers and decimals only
+			});
+			
+			$(document).on('keyup', '#target', function(){	//mobile must use DOCUMENT.on keyup to update with soft keybord
+				calcPlates();
+			});
+			
+			$(document).on('keyup', '#workWeight', function(){	//mobile must use DOCUMENT.on keyup to update with soft keybord
+				calcWarmups();
+			});
+			
+			$(document).on('keyup', '#weights', function(){	//mobile must use DOCUMENT.on keyup to update with soft keybord
+				nukePattern('#weights', '[^0-9.,]');		//force numbers decimals and commas only
+				nukePattern('#weights', '[,]{1,}(?=,)');	//nuke any double commas
+			});
+
+			$(document).on('keyup', '#progressions', function(){	//mobile must use DOCUMENT.on keyup to update with soft keybord
+				nukePattern('#progressions', '[^0-9.,]');		//force numbers decimals and commas only
+				nukePattern('#progressions', '[,]{1,}(?=,)');	//nuke any double commas
+			});
+
+			//load any saved settings
+			if(getCookie('PlatesBar') !== 'null'){
+				$('#tips').prop('checked', getCookie('PlatesTip') === 'true');
+				$('#barWeight').val(getCookie('PlatesBar'));
+				$('#weights').val(getCookie('PlatesWeights'));
+				$('#progressions').val(getCookie('PlatesProgressions'));
+			}
+			if(getCookie('PlatesNotes') !== 'null'){
+				$('#notes').val(getCookie('PlatesNotes'));
+			}
+			
+			$('#target').focus();
+		});
+	</script>
+</head>
+<body>
+	<div id="error" class="ui-state-error ui-corner-all" style="display: none;"> Error!<br /> Please enable Javascript</div>
+	<div id="workSpace" class="center-h">
+		<h3>Plate Calculator</h3>
+		<div>
+			<div class="center-h innerSpace">
+				<button id="down" title="&#8593; change selected weight"><span class="ui-icon ui-icon-minusthick"></span></button>
+				<input id="target" class="smallinput" type="number" placeholder="_ weight" />
+				<button id="up"><span class="ui-icon ui-icon-plusthick"></span></button>
+				<div id="total"></div>
+			</div>
+			<div id="plates" class="center-h"></div>
+		</div>
+		<h3>Warm up Calculator</h3>
+		<div>
+			<table id="warmTable" class="center-h innerSpace">
+			</table>
+			<table class="center-h innerSpace">
+				<tr>
+					<td>Max	</td>
+					<td><input id="workWeight" class="smallinput" type="number" placeholder="_ weight" />	</td>
+					<td><button id="workWeightHelp" title="&#8593; jump to see this weight in the plate calculator" class="warmButton" data-value="100"><span class="ui-icon ui-icon-link"></span></button>	</td>
+				</tr>
+			</table>
+		</div>
+		<h3>Tracking</h3>
+		<div>
+			<table id="tracking">
+			</table>
+			<div id="graphHolder"></div>
+			<table id="trackLegend">
+			</table>
+		</div>
+		<h3>Notes</h3>
+		<div>
+			<textarea id="notes" rows="10" placeholder=" save workout notes here"></textarea><br />
+			<table class="center-h">
+				<tr>
+					<td><button id="saveNotes">Save</button>	</td>
+					<td><div id="savedNotes" class="ui-state-success ui-corner-all" style="display: none;"> Saved</div>	</td>
+				</tr>
+			</table>
+		</div>
+		<h3>Donate</h3>
+		<div>
+			<div class="center-h innerSpace">
+				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+					<input type="hidden" name="cmd" value="_donations">
+					<input type="hidden" name="business" value="joeharker@gmail.com">
+					<input type="hidden" name="lc" value="US">
+					<input type="hidden" name="item_name" value="Joseph Harker">
+					<input type="hidden" name="no_note" value="0">
+					<input type="hidden" name="currency_code" value="USD">
+					<input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHostedGuest">
+					<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+					<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+				</form>
+			</div>
+		</div>
+		<h3>Settings</h3>
+		<div>
+			<table class="center-h">
+				<tr>
+					<td>Show Tips	</td>
+					<td><input id="tips" type="checkbox" />	</td>
+				</tr>
+				<tr>
+					<td>Bar weight	</td>
+					<td><input id="barWeight" class="smallinput" type="number" value="45" />	</td>
+				</tr>
+				<tr>
+					<td>Available plates	</td>
+					<td>
+						<button class="weightButton" data-value="45,35,25,10,5,2.5">Olympic (lb)</button>
+						<button class="weightButton" data-value="20,15,10,5,2.5,1">Olympic (kg)</button>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2"><input class="right-h smallinput" id="weights" type="text" value="45,35,25,10,5,2.5" />	</td>
+				</tr>
+				<tr>
+					<td>Warm up progression %	</td>
+					<td>
+						<button class="progButton" data-value="40,60,80">Starting Squat</button>
+						<button class="progButton" data-value="50,70,90">Starting Bench</button>
+						<button class="progButton" data-value="60,85">Starting Dead</button>
+						<button class="progButton" data-value="55,70,85">Starting Press</button>
+						<br />
+						<button class="progButton" data-value="65,75,85">5.3.1 Week 1</button>
+						<button class="progButton" data-value="70,80,90">5.3.1 Week 2</button>
+						<button class="progButton" data-value="75,85,95">5.3.1 Week 3</button>
+						<button class="progButton" data-value="40,50,60">5.3.1 Week 4</button>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2"><input class="right-h smallinput" id="progressions" type="text" value="40,60,80" />	</td>
+				</tr>
+				<tr>
+					<td><button id="save">Save settings</button>	</td>
+					<td><div id="saved" class="ui-state-success ui-corner-all" style="display: none;"> Saved</div>	</td>
+				</tr>
+				<tr>
+					<td colspan="2">Note: Saved settings do not take effect until the next calculation	</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" src="phonegap.js"></script>
 </html>
