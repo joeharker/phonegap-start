@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, target-densitydpi=device-dpi" />
+	<meta name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,width=device-width,user-scalable=no" />
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 	<title>Plates</title>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/start/jquery-ui.css">
@@ -91,13 +91,7 @@
 			var errors = BASE_ERROR;			
 			var c_value = window.encodeURIComponent(value);
 
-			if (exdays !== null) {
-				var exdate = new Date();
-				exdate.setDate(exdate.getDate() + exdays);
-				c_value += "; expires=" + exdate.toUTCString();
-			}
-
-			window.document.cookie = c_name + "=" + c_value + ';path=/';
+			window.localStorage.setItem(c_name, c_value);
 
 			if(getCookie(c_name) !== window.unescape(value)) { errors += '<br /> Unable to save data. Are cookies blocked?'; }
 			showErrors(errors);
@@ -106,13 +100,7 @@
 		};
 
 		getCookie = function (c_name) {
-			var val = null;
-			var regex = new RegExp('(?:^|[" \t;])' + c_name + '=([^;"]*)(?:$|[";])', 'gi');
-			var match = regex.exec(window.document.cookie);
-
-			if (match !== null) {
-				val = match[1];
-			}
+			var val = window.localStorage.getItem(c_name);
 
 			// null will be returned as an unescaped string: 'null'
 			return window.unescape(val);
