@@ -521,7 +521,7 @@
 		};
 
 		$(window).load(function () {	//after all images are loaded
-			//alert(window.location.href);
+			$('#debug').html(window.location.href);
 			$('#workSpace').accordion({
 				heightStyle: "content"
 				,activate: function( event, ui ) {
@@ -734,6 +734,7 @@
 					<td colspan="2">Note: Saved settings do not take effect until the next calculation	</td>
 				</tr>
 			</table>
+			<div id="debug"></div>
 		</div>
 	</div>
 </body>
