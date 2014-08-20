@@ -3,7 +3,7 @@
 <!-- config.xml reference: https://build.phonegap.com/docs/config-xml -->
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         xmlns:gap = "http://phonegap.com/ns/1.0"
-        id        = "Plate Calculator"
+        id        = "9G2A9NSEDY.007dev.PlateCalculator"
         version   = "1.0.1">
 
     <name>Plate Calculator</name>
@@ -12,7 +12,7 @@
 		Calulates weight lifting plates and progressions
     </description>
 
-    <author href="http://www.007dev.com" email="joeharker@007dev.com">
+    <author href="http://www.007dev.com" email="joeharker@gmail.com">
         Joe Harker
     </author>
 
