@@ -8,6 +8,7 @@
 	<link rel="stylesheet" href="css/jquery-ui.css">
 	<script src="js/jquery-1.9.1.js"></script>
 	<script src="js/jquery-ui.js"></script>
+	<script src="js/fastclick.js"></script>
 	<style>
 		table{border-spacing: 0px;}
 		td{vertical-align: top; padding: 0px;}
@@ -629,7 +630,8 @@
 		});
 	</script>
 </head>
-<body>
+<body onLoad="initFastButtons();">
+<span id="fastclick">
 	<div id="error" class="ui-state-error ui-corner-all" style="display: none;"> Error!<br /> Please enable Javascript</div>
 	<div id="workSpace" class="center-h">
 		<h3>Plate Calculator</h3>
@@ -737,6 +739,7 @@
 			<div id="debug" style="font-size:10px; font-color:silver;"></div>
 		</div>
 	</div>
+	</span>
 </body>
 <script type="text/javascript" src="phonegap.js"></script>
 </html>
