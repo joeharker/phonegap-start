@@ -64,9 +64,22 @@
 		}
 	</style>
 	<script>
+		// Wait for Cordova to load
+		document.addEventListener("deviceready", onDeviceReady, false);
+
+		// Cordova is ready
+		function onDeviceReady() {
+			navigator.splashscreen.show();
+			var debug = 'Device Name: '     + device.name     + '<br />' + 
+						'Device Cordova: '  + device.cordova + '<br />' + 
+						'Device Platform: ' + device.platform + '<br />' + 
+						'Device UUID: '     + device.uuid     + '<br />' + 
+						'Device Version: '  + device.version  + '<br />';
+						'userAgent: '  + navigator.userAgent  + '<br />';
+			$('#debug').html(debug);
+		}
+
 		// generic methods //////////
-		navigator.splashscreen.show();
-		
 		//following consts should match the display order of the accordion
 		var WARMUPS = 0;
 		var PLATES = 1;
@@ -184,7 +197,10 @@
 				Xs : ['Jan','Feb']
 				,Rows : [
 					 {Name : 'Squat', Ys : [150, 160]}
-					,{Name : 'Bench', Ys : [100, 105]}
+					,{Name : 'Bench', Ys : [110, 105]}
+					,{Name : 'Press', Ys : [120, 105]}
+					,{Name : 'Dead', Ys : [130, 105]}
+					,{Name : 'Clean', Ys : [140, 105]}
 				]
 			};
 
@@ -526,11 +542,6 @@
 		};
 
 		$(window).load(function () {	//after all images are loaded
-			var debug = window.location.href;
-			if(window.device !== undefined){
-				debug += '<br />'+ window.device.name;
-			}
-			$('#debug').html(debug);
 			$('#workSpace').accordion({
 				heightStyle: "content"
 				,activate: function( event, ui ) {
