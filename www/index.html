@@ -14,6 +14,8 @@
 		td{vertical-align: top; padding: 0px;}
 		#plates{height: 104px;}
 		#notes{width: 100%;}
+		#total{color: #CCCCCC;}
+		.dark{background: #0078ae url(css/images/ui-bg_gloss-wave_45_e14f1c_500x100.png) 50% 50% repeat-x;}
 		.innerSpace{width: 360px;}
 		.track{width: 50px; padding: 0px; MARGIN: 0px;}
 		.bar{display: block; width: 50px; height: 20px; float: left; text-align: center; border: 2px solid #00FFFF; position: relative; top: 40px;}
@@ -63,6 +65,14 @@
 	</style>
 	<script>
 		// generic methods //////////
+		//following consts should match the display order of the accordion
+		var WARMUPS = 0;
+		var PLATES = 1;
+		var TRACKING = 2;
+		var NOTES = 3;
+		var SETTINGS = 4;
+		var DONATE = 5;
+
 		var BASE_ERROR = ' Error!';
 
 		showErrors = function(errors){
@@ -163,22 +173,16 @@
 			return hex;
 		};
 
-		flashTip = function(selector){
-			if($('#tips').prop('checked')){
-				$(selector).tooltip('open');
-				setTimeout(function(){$(selector).tooltip('close');}, 1000);
-			}
-		};
-
 		// grid methods //////////
 		getTracking = function(){
 			var html = '';
 			var rows;
 			var cols;
 			var data = {
-				Xs : ['Jan']
+				Xs : ['Jan','Feb']
 				,Rows : [
-					{Name : 'Bench', Ys : [100]}
+					 {Name : 'Squat', Ys : [150, 160]}
+					,{Name : 'Bench', Ys : [100, 105]}
 				]
 			};
 
@@ -187,13 +191,13 @@
 			}
 
 			//x labels
-			html += '<tr><td><button class="freshTrack" title="&#8593; reload the graph after any updates"><span class="ui-icon ui-icon-refresh"></span></button></td>';
+			html += '<tr><td><button class="freshTrack"><span class="ui-icon ui-icon-refresh"></span></button></td>';
 			for(var c = 0; c < data.Xs.length; c++){
 				html += '<td><input type="text" class="track" value="'+ data.Xs[c] +'" /></td>';
 			}
 
 			//new x label
-			html += '<td style="width:150px"><input type="text" class="track" onkeyup="if( $(this).val().length > 0 ){ $(\'#newCol\').show(); }else{ $(\'#newCol\').hide(); }" /><button id="newCol" style="display: none;" class="freshTrack"><span class="ui-icon ui-icon-plusthick"></span></button></td></tr>';
+			html += '<td style="width:150px"><input type="text" class="track" placeholder="date" onkeyup="if( $(this).val().length > 0 ){ $(\'#newCol\').show(); }else{ $(\'#newCol\').hide(); }" /><button id="newCol" style="display: none;" class="freshTrack"><span class="ui-icon ui-icon-plusthick"></span></button></td></tr>';
 
 			//y label and x values
 			for(var r = 0; r < data.Rows.length; r++){
@@ -209,14 +213,13 @@
 			}
 
 			//new y label
-			html += '<tr><td><input type="text" class="track" onkeyup="if( $(this).val().length > 0 ){ $(\'#newRow\').show(); }else{ $(\'#newRow\').hide(); }" /><br /><button id="newRow" style="display: none;" class="freshTrack"><span class="ui-icon ui-icon-plusthick"></span></button></td>';
+			html += '<tr><td><input type="text" class="track" placeholder="exercise" onkeyup="if( $(this).val().length > 0 ){ $(\'#newRow\').show(); }else{ $(\'#newRow\').hide(); }" /><br /><button id="newRow" style="display: none;" class="freshTrack"><span class="ui-icon ui-icon-plusthick"></span></button></td>';
 			for(var c = 0; c < data.Xs.length; c++){
 				html += '<td>&nbsp;</td>';
 			}
 			html += '<td>&nbsp;</td></tr>';
 
 			$('#tracking').html(html);
-			$('[title]').tooltip();
 			$('button').button();
 			$('.freshTrack').click(function(){
 				setTracking();
@@ -454,7 +457,7 @@
 					$('#plates').css('width', width +'px');
 				}
 
-				$('#workSpace').accordion('option', 'active', 0);
+				$('#workSpace').accordion('option', 'active', PLATES);
 			}
 		};
 
@@ -526,24 +529,22 @@
 				heightStyle: "content"
 				,activate: function( event, ui ) {
 					switch($('#workSpace').accordion('option', 'active')){
-						case 0: //plates
-							flashTip('#down');
-							$('#target').focus();
-						break;
-						case 1:	//warmups
-							flashTip('#workWeightHelp');
+						case WARMUPS:	//warmups
 							$('#workWeight').focus();
 						break
-						case 2:	//Tracking
+						case PLATES: //plates
+							$('#target').focus();
+						break;
+						case TRACKING:	//Tracking
 							getTracking();
 						break
-						case 3:	//notes
+						case NOTES:	//notes
 							$('#notes').focus();
 						break
-						case 4:	//donate
-						break
-						case 5:	//settings
+						case SETTINGS:	//settings
 							$('#barWeight').focus();
+						break
+						case DONATE:	//donate
 						break
 						default:
 					}
@@ -551,7 +552,6 @@
 			});
 
 			$('button').button();
-			$('[title]').tooltip();
 
 			$('#up').click(function(){
 				increment(true);
@@ -572,7 +572,6 @@
 			});
 
 			$('#save').click(function(){
-				setCookie('PlatesTip', $('#tips').prop('checked'), 9999);
 				setCookie('PlatesBar', $('#barWeight').val(), 9999);
 				setCookie('PlatesWeights', $('#weights').val(), 9999);
 				setCookie('PlatesProgressions', $('#progressions').val(), 9999);
@@ -617,7 +616,6 @@
 
 			//load any saved settings
 			if(getCookie('PlatesBar') !== 'null'){
-				$('#tips').prop('checked', getCookie('PlatesTip') === 'true');
 				$('#barWeight').val(getCookie('PlatesBar'));
 				$('#weights').val(getCookie('PlatesWeights'));
 				$('#progressions').val(getCookie('PlatesProgressions'));
@@ -634,16 +632,6 @@
 <span id="fastclick">
 	<div id="error" class="ui-state-error ui-corner-all" style="display: none;"> Error!<br /> Please enable Javascript</div>
 	<div id="workSpace" class="center-h">
-		<h3>Plate Calculator</h3>
-		<div>
-			<div class="center-h innerSpace">
-				<button id="down" title="&#8593; change selected weight"><span class="ui-icon ui-icon-minusthick"></span></button>
-				<input id="target" class="smallinput" type="number" placeholder="_ weight" />
-				<button id="up"><span class="ui-icon ui-icon-plusthick"></span></button>
-				<div id="total"></div>
-			</div>
-			<div id="plates" class="center-h"></div>
-		</div>
 		<h3>Warm up Calculator</h3>
 		<div>
 			<table id="warmTable" class="center-h innerSpace">
@@ -652,9 +640,19 @@
 				<tr>
 					<td>Max	</td>
 					<td><input id="workWeight" class="smallinput" type="number" placeholder="_ weight" />	</td>
-					<td><button id="workWeightHelp" title="&#8593; jump to see this weight in the plate calculator" class="warmButton" data-value="100"><span class="ui-icon ui-icon-link"></span></button>	</td>
+					<td><button id="workWeightHelp" class="warmButton" data-value="100"><span class="ui-icon ui-icon-link"></span></button>	</td>
 				</tr>
 			</table>
+		</div>
+		<h3>Plate Calculator</h3>
+		<div>
+			<div class="center-h innerSpace">
+				<button id="down"><span class="ui-icon ui-icon-minusthick"></span></button>
+				<input id="target" class="smallinput" type="number" placeholder="_ weight" />
+				<button id="up"><span class="ui-icon ui-icon-plusthick"></span></button>
+				<div id="total"></div>
+			</div>
+			<div id="plates" class="center-h"></div>
 		</div>
 		<h3>Tracking</h3>
 		<div>
@@ -674,29 +672,9 @@
 				</tr>
 			</table>
 		</div>
-		<h3>Donate</h3>
-		<div>
-			<div class="center-h innerSpace">
-				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-					<input type="hidden" name="cmd" value="_donations">
-					<input type="hidden" name="business" value="joeharker@gmail.com">
-					<input type="hidden" name="lc" value="US">
-					<input type="hidden" name="item_name" value="Joseph Harker">
-					<input type="hidden" name="no_note" value="0">
-					<input type="hidden" name="currency_code" value="USD">
-					<input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHostedGuest">
-					<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-					<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-				</form>
-			</div>
-		</div>
 		<h3>Settings</h3>
 		<div>
 			<table class="center-h">
-				<tr>
-					<td>Show Tips	</td>
-					<td><input id="tips" type="checkbox" />	</td>
-				</tr>
 				<tr>
 					<td>Bar weight	</td>
 					<td><input id="barWeight" class="smallinput" type="number" value="45" />	</td>
@@ -716,8 +694,9 @@
 					<td>
 						<button class="progButton" data-value="40,60,80">Starting Squat</button>
 						<button class="progButton" data-value="50,70,90">Starting Bench</button>
-						<button class="progButton" data-value="60,85">Starting Dead</button>
+						<button class="progButton" data-value="40,60,70,90">Starting Dead</button>
 						<button class="progButton" data-value="55,70,85">Starting Press</button>
+						<button class="progButton" data-value="55,70,85">Starting Clean</button>
 						<br />
 						<button class="progButton" data-value="65,75,85">5.3.1 Week 1</button>
 						<button class="progButton" data-value="70,80,90">5.3.1 Week 2</button>
@@ -738,8 +717,25 @@
 			</table>
 			<div id="debug" style="font-size:10px; font-color:silver;"></div>
 		</div>
+		<h3 class="dark">Donate</h3>
+		<div>
+			<div class="center-h innerSpace">
+				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+					<input type="hidden" name="cmd" value="_donations">
+					<input type="hidden" name="business" value="joeharker@gmail.com">
+					<input type="hidden" name="lc" value="US">
+					<input type="hidden" name="item_name" value="Joseph Harker">
+					<input type="hidden" name="no_note" value="0">
+					<input type="hidden" name="currency_code" value="USD">
+					<input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHostedGuest">
+					<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+					<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+				</form>
+			</div>
+		</div>
 	</div>
 	</span>
 </body>
 <script type="text/javascript" src="phonegap.js"></script>
 </html>
+
