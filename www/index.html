@@ -147,7 +147,7 @@
 
 		stringColor = function (text) {
 			var hex = '';
-			var diffMultipyler = 333;	// * 333 helps small differences in text display very different colors
+			var diffMultipyler = 3.14;	// * 333 helps small differences in text display very different colors
 			var r = 0;
 			var g = 0;
 			var b = 0;
@@ -168,7 +168,7 @@
 			}
 
 			//conver to dark colors
-			hex = '#' + intToHex(r % 128) + intToHex(g % 128) + intToHex(b % 128);
+			hex = '#' + intToHex(r % 256) + intToHex(g % 256) + intToHex(b % 256);
 
 			return hex;
 		};
