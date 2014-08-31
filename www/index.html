@@ -524,7 +524,11 @@
 		};
 
 		$(window).load(function () {	//after all images are loaded
-			$('#debug').html(window.location.href);
+			var debug = window.location.href;
+			if(window.device !== undefined){
+				debug += '<br />'+ window.device.name;
+			}
+			$('#debug').html(debug);
 			$('#workSpace').accordion({
 				heightStyle: "content"
 				,activate: function( event, ui ) {
