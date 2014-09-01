@@ -6,7 +6,6 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 	<title>Plates</title>
 	<link rel="stylesheet" href="css/jquery-ui.css">
-	<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
 	<script src="js/jquery-1.9.1.js"></script>
 	<script src="js/jquery-ui.js"></script>
 	<script src="js/faskclick.js"></script>
@@ -72,7 +71,7 @@
 		function onDeviceReady() {
 			navigator.splashscreen.show();
 			var debug = 'Device Name: '     + device.name     + '<br />' + 
-						'Device Cordova: '  + device.cordova + '<br />' + 
+						'Device Cordova: '  + device.cordova  + '<br />' + 
 						'Device Platform: ' + device.platform + '<br />' + 
 						'Device UUID: '     + device.uuid     + '<br />' + 
 						'Device Version: '  + device.version  + '<br />';
@@ -745,6 +744,7 @@
 	</div>
 	</span>
 </body>
-<script type="text/javascript" src="phonegap.js"></script>
+<script src="phonegap.js"></script>
+<script src="cordova.js"></script>
 </html>
 
